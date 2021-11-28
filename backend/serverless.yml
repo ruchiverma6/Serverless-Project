@@ -30,31 +30,7 @@ provider:
   logs:
     # Enable API Gateway logs
     restApi: true
-
-  iam:
-    role:
-      statements:
-        - Effect: Allow
-          Action:
-            - xray:PutTelemetryRecords
-            - xray:PutTraceSegments
-          Resource: "*"
-        - Effect: Allow
-          Action:
-            - dynamodb:Scan
-            - dynamodb:PutItem
-            - dynamodb:GetItem
-            - dynamodb:Query
-            - dynamodb:UpdateItem
-          Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
-        - Effect: "Allow"
-          Action: 
-            - s3:PutObject
-            - s3:GetObject  
-          Resource: arn:aws:s3:::${self:provider.environment.ATTACHMENT_S3_BUCKET}/*  
   
-
-
 functions:
 
   Auth:
@@ -70,6 +46,16 @@ functions:
           path: todos
           cors: true
           authorizer: Auth
+    iamRoleStatements: # here   
+      - Effect: Allow
+        Action:
+            - xray:PutTelemetryRecords
+            - xray:PutTraceSegments
+        Resource: "*"  
+      - Effect: Allow
+        Action:         
+            - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
   # TODO: Configure this function - 
   # Provide iamRoleStatements property. Decide the Actions and AWS Resource. 
@@ -86,6 +72,17 @@ functions:
           request:
             schemas:
               application/json: ${file(models/create-todo-model.json)}
+    iamRoleStatements: # here   
+      - Effect: Allow
+        Action:
+            - xray:PutTelemetryRecords
+            - xray:PutTraceSegments
+        Resource: "*"  
+      - Effect: Allow
+        Action:
+            - dynamodb:PutItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+
 
   # TODO: Configure this function
   # Provide property for setting up CORS, Authorizer, iamRoleStatements, and request schemas
@@ -96,6 +93,18 @@ functions:
           method: patch
           path: todos/{todoId}
           cors: true
+    iamRoleStatements: # here   
+    - Effect: Allow
+      Action:
+            - xray:PutTelemetryRecords
+            - xray:PutTraceSegments
+      Resource: "*"  
+    - Effect: Allow
+      Action:
+            - dynamodb:Query
+            - dynamodb:UpdateItem
+      Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+
 
   # TODO: Configure this function
   # Provide property for setting up CORS, Authorizer, iamRoleStatements
@@ -106,6 +115,18 @@ functions:
           method: delete
           path: todos/{todoId}
           cors: true
+    iamRoleStatements: # here   
+      - Effect: Allow
+        Action:
+            - xray:PutTelemetryRecords
+            - xray:PutTraceSegments
+        Resource: "*"  
+      - Effect: Allow
+        Action:
+            - dynamodb:DeleteItem
+            - dynamodb:Query
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+
 
   # TODO: Configure this function
   # Provide property for setting up CORS, Authorizer, iamRoleStatements
@@ -116,6 +137,25 @@ functions:
           method: post
           path: todos/{todoId}/attachment
           cors: true
+    iamRoleStatements: # here   
+      - Effect: Allow
+        Action:
+            - xray:PutTelemetryRecords
+            - xray:PutTraceSegments
+        Resource: "*"  
+      - Effect: Allow
+        Action:
+            - dynamodb:Query
+            - dynamodb:UpdateItem
+        Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
+      - Effect: "Allow"
+        Action: 
+            - s3:PutObject
+            - s3:GetObject  
+
+            
+        Resource: arn:aws:s3:::${self:provider.environment.ATTACHMENT_S3_BUCKET}/*  
+
 
 
 resources:
